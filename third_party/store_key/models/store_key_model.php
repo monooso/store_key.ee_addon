@@ -370,7 +370,7 @@ class Store_key_model extends CI_Model {
     $mod_class = $this->get_sanitized_module_class();
 
     $this->_register_module($mod_class, $package_version);
-        $this->_create_module_tables();
+    $this->_create_module_tables();
 
     return TRUE;
   }
@@ -402,7 +402,7 @@ class Store_key_model extends CI_Model {
     
     // Drop the module tables.
     $this->EE->load->dbforge();
-    $this->EE->dbforge->drop_table('example_table');
+    $this->EE->dbforge->drop_table('store_key_license_keys');
 
     return TRUE;
   }
@@ -513,25 +513,31 @@ class Store_key_model extends CI_Model {
   {
     $this->EE->load->dbforge();
 
-    // Notification events.
-    $example_schema = array(
-      'example_id' => array(
+    // License keys table.
+    $schema = array(
+      'license_key_id' => array(
         'auto_increment'  => TRUE,
         'constraint'      => 10,
         'type'            => 'INT',
         'unsigned'        => TRUE
       ),
-      'site_id' => array(
-        'constraint'  => 5,
+      'order_item_id' => array(
+        'constraint'  => 10,
+        'null'        => FALSE,
         'type'        => 'INT',
         'unsigned'    => TRUE
+      ),
+      'license_key' => array(
+        'constraint' => 128,
+        'null'       => FALSE,
+        'type'       => 'VARCHAR'
       )
     );
 
-    // Should ideally have foreign key for site_id.
-    $this->EE->dbforge->add_field($example_schema);
-    $this->EE->dbforge->add_key('example_id', TRUE);
-    $this->EE->dbforge->create_table('example_table', TRUE);
+    // Should ideally have foreign key for order_item_id.
+    $this->EE->dbforge->add_field($schema);
+    $this->EE->dbforge->add_key('license_key_id', TRUE);
+    $this->EE->dbforge->create_table('store_key_license_keys', TRUE);
   }
 
 
@@ -546,7 +552,7 @@ class Store_key_model extends CI_Model {
   protected function _register_module($module_class, $package_version)
   {
     $this->EE->db->insert('modules', array(
-      'has_cp_backend'      => 'y',
+      'has_cp_backend'      => 'n',
       'has_publish_fields'  => 'n',
       'module_name'         => $module_class,
       'module_version'      => $package_version

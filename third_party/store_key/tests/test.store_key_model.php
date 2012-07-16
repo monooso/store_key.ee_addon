@@ -180,7 +180,7 @@ class Test_store_key_model extends Testee_unit_test_case {
 
     // Register the module.
     $module_data = array(
-      'has_cp_backend'      => 'y',
+      'has_cp_backend'      => 'n',
       'has_publish_fields'  => 'n',
       'module_name'         => $this->_module_class,
       'module_version'      => $package_version
@@ -188,7 +188,13 @@ class Test_store_key_model extends Testee_unit_test_case {
 
     $this->EE->db->expectOnce('insert', array('modules', $module_data));
 
-    // Run the tests.
+    // Create the module table.
+    $this->EE->load->expectOnce('dbforge');
+    $this->EE->dbforge->expectOnce('add_field', array('*'));
+    $this->EE->dbforge->expectOnce('add_key', array('license_key_id', TRUE));
+    $this->EE->dbforge->expectOnce('create_table',
+      array('store_key_license_keys', TRUE));
+
     $this->_subject->install_module($package_version);
   }
 
@@ -216,8 +222,11 @@ class Test_store_key_model extends Testee_unit_test_case {
     $this->EE->db->expectAt(1, 'delete', array('modules',
       array('module_name' => $this->_module_class)));
 
+    // Delete the module table.
+    $this->EE->load->expectOnce('dbforge');
+    $this->EE->dbforge->expectOnce('drop_table',
+      array('store_key_license_keys'));
 
-    // Run the tests.
     $this->assertIdentical(TRUE, $this->_subject->uninstall_module());
   }
 
