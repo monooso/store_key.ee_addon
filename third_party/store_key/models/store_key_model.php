@@ -427,7 +427,8 @@ class Store_key_model extends CI_Model {
       OR ! valid_int($order_item_index, 1)
     )
     {
-      return '';
+      throw new Exception($this->EE->lang->line(
+        'exception__generate_license_key_invalid_parameters'));
     }
 
     /**
@@ -468,15 +469,16 @@ class Store_key_model extends CI_Model {
       OR $license_key == ''
     )
     {
-      return;
+      throw new Exception($this->EE->lang->line(
+        'exception__save_license_key_invalid_parameters'));
     }
 
     $this->EE->db->insert(
+      'store_key_license_keys',
       array(
         'license_key'   => $license_key,
         'order_item_id' => $order_item_id
-      ),
-      'exp_store_key_license_keys'
+      )
     );
   }
   

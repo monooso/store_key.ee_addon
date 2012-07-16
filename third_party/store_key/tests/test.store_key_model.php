@@ -254,6 +254,19 @@ class Test_store_key_model extends Testee_unit_test_case {
    * ADD-ON SPECIFIC TESTS
    * ------------------------------------------------------------ */
 
+  public function test__generate_license_key__throws_exception_with_invalid_parameters()
+  {
+    $message = 'Epic fail!';
+    $this->EE->lang->returns('line', $message);
+
+    $this->expectException(new Exception($message));
+    $this->_subject->generate_license_key(0, 1);
+
+    $this->expectException(new Exception($message));
+    $this->_subject->generate_license_key(1, 0);
+  }
+
+  
   public function test__generate_license_key__returns_32_character_hex_string()
   {
     $order_item_id    = 12345;
@@ -264,17 +277,30 @@ class Test_store_key_model extends Testee_unit_test_case {
   }
 
 
+  public function test__save_license_key__throws_exception_with_invalid_parameters()
+  {
+    $message = 'Epic fail!';
+    $this->EE->lang->returns('line', $message);
+
+    $this->expectException(new Exception($message));
+    $this->_subject->save_license_key(0, 'ABC123');
+
+    $this->expectException(new Exception($message));
+    $this->_subject->save_license_key(1, FALSE);
+  }
+  
+
   public function test__save_license_key__saves_license_key_to_database()
   {
     $order_item_id = 12345;
     $license_key   = '012345ABCDEF';
-    $table_name    = 'exp_store_key_license_keys';
+    $table_name    = 'store_key_license_keys';
     $insert_data   = array(
       'license_key'   => $license_key,
       'order_item_id' => $order_item_id
     );
 
-    $this->EE->db->expectOnce('insert', array($insert_data, $table_name));
+    $this->EE->db->expectOnce('insert', array($table_name, $insert_data));
     $this->_subject->save_license_key($order_item_id, $license_key);
   }
   
