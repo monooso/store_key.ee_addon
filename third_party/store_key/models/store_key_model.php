@@ -416,11 +416,39 @@ class Store_key_model extends CI_Model {
    * Generates a unique license key.
    *
    * @access  public
+   * @param   int|string  $order_item_id      The order item ID.
+   * @param   int         $order_item_index   If item_qty is 2, the first item 
+   *                                          has an index of 1, the second 2.
    * @return  string
    */
-  public function generate_license_key()
+  public function generate_license_key($order_item_id, $order_item_index)
   {
-    return '01234567890123456789012345abcdef';
+    if ( ! valid_int($order_item_id, 1)
+      OR ! valid_int($order_item_index, 1)
+    )
+    {
+      return '';
+    }
+
+    /**
+     * Probably overkill, but better to be safe. First off, we create an MD5 
+     * hash of the concatenated Order Item ID, Order Item Index, and time.
+     *
+     * Then we pad the Order Item ID to 10 characters, and the Order Item Index 
+     * to 4 characters, both with random hexadecimal characters.
+     *
+     * Finally, we concatenate the MD5 hash and the padding strings, resulting 
+     * in a unique 46-character string.
+     */
+
+    $order_item_id    = (string) $order_item_id;
+    $order_item_index = (string) $order_item_index;
+
+    $base_hash = md5($order_item_id .$order_item_index .time());
+    $pad_id    = str_pad($order_item_id, 10, $base_hash, STR_PAD_LEFT);
+    $pad_index = str_pad($order_item_index, 4, $base_hash, STR_PAD_LEFT);
+
+    return $base_hash .$pad_id .$pad_index;
   }
 
 
@@ -435,7 +463,7 @@ class Store_key_model extends CI_Model {
   public function save_license_key($order_item_id, $license_key)
   {
     // Pretty lenient with the license key.
-    if ( ! valid_int($order_item_id)
+    if ( ! valid_int($order_item_id, 1)
       OR ! is_string($license_key)
       OR $license_key == ''
     )

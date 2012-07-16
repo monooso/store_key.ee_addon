@@ -247,8 +247,11 @@ class Test_store_key_model extends Testee_unit_test_case {
 
   public function test__generate_license_key__returns_32_character_hex_string()
   {
-    $this->assertPattern('/^[a-f0-9]{32}$/i',
-      $this->_subject->generate_license_key());
+    $order_item_id    = 12345;
+    $order_item_index = 2;
+
+    $this->assertPattern('/^[a-f0-9]{46}$/i',
+      $this->_subject->generate_license_key($order_item_id, $order_item_index));
   }
 
 
