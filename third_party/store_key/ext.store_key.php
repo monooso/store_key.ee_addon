@@ -135,10 +135,20 @@ class Store_key_ext {
       }
 
       // Generate the license keys.
-      for ($key_count = 0; $key_count < intval($item['item_qty']); $key_count++)
+      $item_id = $item['order_item_id'];
+
+      // NOTE: license key generator expects 1-based indices.
+      for ($count = 1; $count <= intval($item['item_qty']); $count++)
       {
-        $this->_model->save_license_key($item['order_item_id'],
-          $this->_model->generate_license_key());
+        try
+        {
+          $this->_model->save_license_key($item_id,
+            $this->_model->generate_license_key($item_id, $count));
+        }
+        catch (Exception $exception)
+        {
+          $this->_model->log_message($exception->getMessage(), 3);
+        }
       }
     }
   }
