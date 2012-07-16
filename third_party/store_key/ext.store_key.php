@@ -51,7 +51,7 @@ class Store_key_ext {
     $this->docs_url = 'http://experienceinternet.co.uk/';
     $this->name     = $this->EE->lang->line('store_key_extension_name');
     $this->settings = $settings;
-    $this->settings_exist = 'y';
+    $this->settings_exist = 'n';
     $this->version  = $this->_model->get_package_version();
   }
 
