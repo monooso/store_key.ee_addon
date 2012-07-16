@@ -8,6 +8,7 @@
  * @package         Store_key
  */
 
+require_once PATH_THIRD .'store_key/helpers/EI_number_helper.php';
 require_once PATH_THIRD .'store_key/ext.store_key.php';
 require_once PATH_THIRD .'store_key/models/store_key_model.php';
 
@@ -69,6 +70,45 @@ class Test_store_key_ext extends Testee_unit_test_case {
     $this->_subject->disable_extension();
   }
 
+  
+  public function test__on_store_order_complete_end__logs_error_message_if_order_contains_no_items()
+  {
+    $order = array('items' => array());
+
+    // Retrieve the error message string.
+    $message = 'Oh noes!';
+    $this->EE->lang->returns('line', $message, array('error__no_order_items'));
+
+    // Log the message.
+    $this->_model->expectOnce('log_message', array($message, 3));
+  
+    $this->_subject->on_store_order_complete_end($order);
+  }
+
+
+  public function test__on_store_order_complete_end__generates_license_keys_for_valid_order()
+  {
+    $key = 'ABC123';
+
+    $order = array('items' => array(
+      array('item_qty' => 2, 'order_item_id' => 100),
+      array('item_qty' => 1, 'order_item_id' => 200)
+    ));
+
+    $this->_model->expectNever('log_message');
+    $this->_model->expectCallCount('generate_license_key', 3);
+    $this->_model->expectCallCount('save_license_key', 3);
+
+    $this->_model->returns('generate_license_key', $key);
+
+    $this->_model->expectAt(0, 'save_license_key', array(100, $key));
+    $this->_model->expectAt(1, 'save_license_key', array(100, $key));
+    $this->_model->expectAt(2, 'save_license_key', array(200, $key));
+  
+    $this->_subject->on_store_order_complete_end($order);
+  }
+  
+  
 
   public function test__update_extension__calls_model_update_method_with_correct_arguments_and_honors_return_value()
   {
