@@ -54,7 +54,7 @@ class Test_store_key_ext extends Testee_unit_test_case {
 
   public function test__activate_extension__calls_model_install_method_with_correct_arguments()
   {
-    $hooks = array('channel_entries_query_result');
+    $hooks = array('store_order_complete_end');
 
     $this->_model->expectOnce('install_extension',
       array($this->_pkg_version, $hooks));

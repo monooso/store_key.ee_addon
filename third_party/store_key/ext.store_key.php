@@ -64,7 +64,7 @@ class Store_key_ext {
    */
   public function activate_extension()
   {
-    $hooks = array('channel_entries_query_result', );
+    $hooks = array('store_order_complete_end');
     $this->_model->install_extension($this->version, $hooks);
   }
 
@@ -82,19 +82,21 @@ class Store_key_ext {
 
 
   /**
-   * Handles the channel_entries_query_result extension hook.
+   * Handles the store_order_complete_end extension hook.
    *
    * @access  public
+   * @param   ??      $order    Order details.
    * @return  void
    */
-  public function on_channel_entries_query_result()
+  public function on_store_order_complete_end($order)
   {
-    if (($last_call = $this->EE->extensions->last_call) === FALSE)
+    if (($last_call = $this->EE->extensions->last_call) !== FALSE)
     {
-      // No last call data.
+      // Retrieve last call data.
     }
 
-    error_log('Handling the channel_entries_query_result extension hook.');
+    error_log('Handling the store_order_complete_end extension hook.');
+    error_log('Order information: ' .print_r($order, TRUE));
   }
 
 
