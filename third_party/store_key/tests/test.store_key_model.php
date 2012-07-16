@@ -241,6 +241,32 @@ class Test_store_key_model extends Testee_unit_test_case {
   }
 
 
+  /* --------------------------------------------------------------
+   * ADD-ON SPECIFIC TESTS
+   * ------------------------------------------------------------ */
+
+  public function test__generate_license_key__returns_32_character_hex_string()
+  {
+    $this->assertPattern('/^[a-f0-9]{32}$/i',
+      $this->_subject->generate_license_key());
+  }
+
+
+  public function test__save_license_key__saves_license_key_to_database()
+  {
+    $order_item_id = 12345;
+    $license_key   = '012345ABCDEF';
+    $table_name    = 'exp_store_key_license_keys';
+    $insert_data   = array(
+      'license_key'   => $license_key,
+      'order_item_id' => $order_item_id
+    );
+
+    $this->EE->db->expectOnce('insert', array($insert_data, $table_name));
+    $this->_subject->save_license_key($order_item_id, $license_key);
+  }
+  
+  
 }
 
 

@@ -412,6 +412,46 @@ class Store_key_model extends CI_Model {
    * PUBLIC ADD-ON SPECIFIC METHODS
    * ------------------------------------------------------------ */
 
+  /**
+   * Generates a unique license key.
+   *
+   * @access  public
+   * @return  string
+   */
+  public function generate_license_key()
+  {
+    return '01234567890123456789012345abcdef';
+  }
+
+
+  /**
+   * Saves the given order item license key to the database.
+   *
+   * @access  public
+   * @param   int|string    $order_item_id    The order item ID.
+   * @param   string    $license_key    The license key.
+   * @return  void
+   */
+  public function save_license_key($order_item_id, $license_key)
+  {
+    // Pretty lenient with the license key.
+    if ( ! valid_int($order_item_id)
+      OR ! is_string($license_key)
+      OR $license_key == ''
+    )
+    {
+      return;
+    }
+
+    $this->EE->db->insert(
+      array(
+        'license_key'   => $license_key,
+        'order_item_id' => $order_item_id
+      ),
+      'exp_store_key_license_keys'
+    );
+  }
+  
 
 
   /* --------------------------------------------------------------
