@@ -10,6 +10,7 @@
 
 require_once dirname(__FILE__) .'/../config.php';
 require_once dirname(__FILE__) .'/../classes/store_key_license_key.php';
+require_once dirname(__FILE__) .'/../helpers/EI_number_helper.php';
 
 class Store_key_model extends CI_Model {
 

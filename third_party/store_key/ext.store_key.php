@@ -46,9 +46,6 @@ class Store_key_ext {
       strtolower($this->_model->get_sanitized_extension_class()),
       strtolower($this->_model->get_package_name()));
 
-    // Load the number helper.
-    $this->EE->load->helper('EI_number_helper');
-
     // Set the public properties.
     $this->description = $this->EE->lang->line(
       'store_key_extension_description');
