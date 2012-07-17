@@ -16,7 +16,6 @@ class Store_key_ext {
   public $description;
   public $docs_url;
   public $name;
-  public $required_by;
   public $settings;
   public $settings_exist;
   public $version;
@@ -52,7 +51,6 @@ class Store_key_ext {
 
     $this->docs_url       = 'http://experienceinternet.co.uk/';
     $this->name           = $this->EE->lang->line('store_key_extension_name');
-    $this->required_by    = array('module');
     $this->settings       = $settings;
     $this->settings_exist = 'n';
     $this->version        = $this->_model->get_package_version();
