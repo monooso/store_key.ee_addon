@@ -37,14 +37,14 @@ class Store_key_ext {
   {
     $this->EE =& get_instance();
 
-    $this->EE->load->add_package_path(PATH_THIRD .'store_key/');
-
-    // Still need to specify the package...
-    $this->EE->lang->loadfile('store_key_ext', 'store_key');
-
     // Load the model.
     $this->EE->load->model('store_key_model');
     $this->_model = $this->EE->store_key_model;
+
+    // Still need to specify the package.
+    $this->EE->lang->loadfile(
+      strtolower($this->_model->get_sanitized_extension_class()),
+      strtolower($this->_model->get_package_name()));
 
     // Load the number helper.
     $this->EE->load->helper('EI_number_helper');

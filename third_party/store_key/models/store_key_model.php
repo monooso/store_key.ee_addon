@@ -9,6 +9,7 @@
  */
 
 require_once dirname(__FILE__) .'/../config.php';
+require_once dirname(__FILE__) .'/../classes/store_key_license_key.php';
 
 class Store_key_model extends CI_Model {
 
@@ -65,6 +66,13 @@ class Store_key_model extends CI_Model {
     $this->_sanitized_module_class = ucfirst(strtolower($this->_package_name));
     $this->_sanitized_extension_class = $this->_sanitized_module_class .'_ext';
 
+    // Register the package path.
+    $this->EE->load->add_package_path(PATH_THIRD
+      .strtolower($this->_package_name) .'/');
+
+    // Load the language file.
+    $this->EE->lang->loadfile(strtolower($this->_package_name));
+
     // Initialise the add-on cache.
     if ( ! array_key_exists($this->_namespace, $this->EE->session->cache))
     {
@@ -77,6 +85,14 @@ class Store_key_model extends CI_Model {
       $this->EE->session->cache[$this->_namespace]
         [$this->_package_name] = array();
     }
+
+    // Cache the order license keys.
+    $this->EE->session->cache[$this->_namespace][$this->_package_name]
+      ['order_license_keys'] = array();
+
+    // Cache the order item order IDs.
+    $this->EE->session->cache[$this->_namespace][$this->_package_name]
+      ['order_item_order_ids'] = array();
   }
 
 
@@ -427,8 +443,10 @@ class Store_key_model extends CI_Model {
       OR ! valid_int($order_item_index, 1)
     )
     {
-      throw new Exception($this->EE->lang->line(
-        'exception__generate_license_key_invalid_parameters'));
+      $message = sprintf($this->EE->lang->line('exception__invalid_parameters'),
+        __METHOD__);
+
+      throw new Exception($message);
     }
 
     /**
@@ -454,11 +472,67 @@ class Store_key_model extends CI_Model {
 
 
   /**
+   * Retrieves the license keys for the specified order.
+   *
+   * @access  public
+   * @param   int|string    $order_id    The order ID.
+   * @return  array
+   */
+  public function get_license_keys_by_order_id($order_id)
+  {
+    if ( ! valid_int($order_id, 1))
+    {
+      $message = sprintf($this->EE->lang->line('exception__invalid_order_id'),
+        __METHOD__);
+
+      throw new Exception($message);
+    }
+
+    $cache =& $this->_get_package_cache();
+    
+    if ( ! array_key_exists($cache['order_license_keys'][$order_id]))
+    {
+      // Retrieve the license keys from the database.
+      $fields = array('entry_id', 'license_key', 'order_id',
+        'store_order_items.order_item_id', 'sku', 'title');
+
+      $db_result = $this->EE->db
+        ->select(implode(',', $fields), FALSE)
+        ->from('store_key_license_keys')
+        ->join('store_order_items', 'store_order_items.order_item_id'
+          .' = store_key_license_keys.order_item_id')
+        ->where(array('store_order_items.order_id' => $order_id))
+        ->get();
+
+      if ( ! $db_result->num_rows())
+      {
+        $message = sprintf($this->EE->lang->line('exception__unknown_order_id'),
+          __METHOD__);
+
+        throw new Exception($message);
+      }
+
+      $keys = array();
+
+      foreach ($db_result->result_array() AS $db_row)
+      {
+        $keys[] = new Store_key_license_key($db_row);
+      }
+
+      // Add the license keys to the cache.
+      $cache['order_license_keys'][$order_id] = $keys;
+    }
+
+    return $cache['order_license_keys'][$order_id];
+  }
+
+
+  /**
    * Saves the given order item license key to the database.
    *
    * @access  public
    * @param   int|string    $order_item_id    The order item ID.
-   * @param   string    $license_key    The license key.
+   * @param   string        $license_key      The license key.
    * @return  void
    */
   public function save_license_key($order_item_id, $license_key)
@@ -466,11 +540,13 @@ class Store_key_model extends CI_Model {
     // Pretty lenient with the license key.
     if ( ! valid_int($order_item_id, 1)
       OR ! is_string($license_key)
-      OR $license_key == ''
+      OR ! $license_key
     )
     {
-      throw new Exception($this->EE->lang->line(
-        'exception__save_license_key_invalid_parameters'));
+      $message = sprintf($this->EE->lang->line('exception__invalid_parameters'),
+        __METHOD__);
+
+      throw new Exception($message);
     }
 
     $this->EE->db->insert(

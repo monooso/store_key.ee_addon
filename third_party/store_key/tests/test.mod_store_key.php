@@ -32,8 +32,7 @@ class Test_store_key extends Testee_unit_test_case {
     parent::setUp();
 
     // Generate the mock model.
-    Mock::generate('Store_key_model',
-      get_class($this) .'_mock_model');
+    Mock::generate('Store_key_model', get_class($this) .'_mock_model');
 
     /**
      * The subject loads the models using $this->EE->load->model().
@@ -47,13 +46,7 @@ class Test_store_key extends Testee_unit_test_case {
     $this->_subject = new Store_key();
   }
 
-      public function test__licenses__returns_test_string()
-  {
-    $this->assertIdentical($this->_subject->licenses(),
-      'exp:store_key:licenses output');
-  }
 
-    
 }
 
 

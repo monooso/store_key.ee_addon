@@ -267,7 +267,7 @@ class Test_store_key_model extends Testee_unit_test_case {
   }
 
   
-  public function test__generate_license_key__returns_32_character_hex_string()
+  public function test__generate_license_key__returns_46_character_hex_string()
   {
     $order_item_id    = 12345;
     $order_item_index = 2;
@@ -275,6 +275,58 @@ class Test_store_key_model extends Testee_unit_test_case {
     $this->assertPattern('/^[a-f0-9]{46}$/i',
       $this->_subject->generate_license_key($order_item_id, $order_item_index));
   }
+
+
+  public function test__get_license_keys_by_order_id__retrieves_keys_from_database()
+  {
+    $order_id = '1234';
+
+    $db_result = $this->_get_mock('db_query');
+    $db_rows   = array(
+      array(
+        'entry_id'      => '111',
+        'license_key'   => 'ABC1234',
+        'order_id'      => $order_id,
+        'order_item_id' => '222',
+        'sku'           => 'manhattan',
+        'title'         => 'Manhattan'
+      ),
+      array(
+        'entry_id'      => '333',
+        'license_key'   => 'BCD2345',
+        'order_id'      => $order_id,
+        'order_item_id' => '444',
+        'sku'           => 'annie_hall',
+        'title'         => 'Annie Hall'
+      )
+    );
+
+    $fields = array('entry_id', 'license_key', 'order_id',
+      'store_order_items.order_item_id', 'sku', 'title');
+
+    $this->EE->db->expectOnce('select', array(implode(',', $fields), FALSE));
+    $this->EE->db->expectOnce('from', array('store_key_license_keys'));
+    $this->EE->db->expectOnce('join', array('store_order_items',
+      'store_order_items.order_item_id = store_key_license_keys.order_item_id'));
+
+    $this->EE->db->expectOnce('where', array(
+      array('store_order_items.order_id' => $order_id)));
+
+    $this->EE->db->expectOnce('get');
+    $this->EE->db->returnsByReference('get', $db_result);
+
+    $db_result->returns('num_rows', count($db_rows));
+    $db_result->returns('result_array', $db_rows);
+
+    $expected_result = array(
+      new Store_key_license_key($db_rows[0]),
+      new Store_key_license_key($db_rows[1])
+    );
+
+    $this->assertIdentical($expected_result,
+      $this->_subject->get_license_keys_by_order_id($order_id));
+  }
+  
 
 
   public function test__save_license_key__throws_exception_with_invalid_parameters()
